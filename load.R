@@ -47,10 +47,3 @@ responses <- tibble(path = fs::dir_ls("data/source/", regexp = "\\.csv$")) %>%
     )
   ) %>%
   separate(BYCOND, into = c("BYCOND_CATEGORY", "BYCOND_VALUE"), sep = fixed(" = "), remove = FALSE, convert = TRUE)
-
-responses %>%
-  filter(SURVEYR == 2019) %>%
-  filter(TITLE_E == "Question 11. Overall, I feel valued at work.") %>%
-  group_by(subset, DESCRIP_E) %>%
-  summarize(responses = sum(ANSCOUNT, na.rm = TRUE)) %>%
-  View()
