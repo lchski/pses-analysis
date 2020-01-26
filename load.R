@@ -47,3 +47,7 @@ responses <- tibble(path = fs::dir_ls("data/source/", regexp = "\\.csv$")) %>%
     )
   ) %>%
   separate(BYCOND, into = c("BYCOND_CATEGORY", "BYCOND_VALUE"), sep = fixed(" = "), remove = FALSE, convert = TRUE)
+
+response_count_2019 <- 182306
+response_rate_2019 <- 0.623
+population_2019 <- response_count_2019 / response_rate_2019

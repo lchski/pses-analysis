@@ -1,4 +1,14 @@
 
+highest_answered_questions_2019 <- responses %>%
+  filter(SURVEYR == 2019) %>%
+  mutate(
+    response_count_prop = ANSCOUNT / response_count_2019
+  ) %>%
+  arrange(-response_count_prop) %>%
+  slice(1:10) %>%
+  select(QUESTION) %>%
+  distinct()
+
 ## see all responses to Q11 for 2019, by subset (file) and BYCOND_CATEGORY
 responses %>%
   filter(SURVEYR == 2019) %>%
@@ -31,3 +41,53 @@ responses %>%
   filter(BYCOND_CATEGORY == "Q94A") %>%
   select(DESCRIP_E, ANSCOUNT) %>%
   mutate(prop = ANSCOUNT / sum(ANSCOUNT, na.rm = TRUE))
+
+count_by_occupational_group_for_top_10 <- responses %>%
+  filter(SURVEYR == 2019) %>%
+  filter(QUESTION %in% highest_answered_questions_2019$QUESTION) %>%
+  filter(DEPT_E == "Public Service") %>%
+  filter(BYCOND_CATEGORY == "Q94A") %>%
+  group_by(QUESTION) %>%
+  select(DESCRIP_E, ANSCOUNT) %>%
+  mutate(prop = ANSCOUNT / sum(ANSCOUNT, na.rm = TRUE))
+
+count_by_occupational_group_for_top_10 %>%
+  ungroup() %>%
+  group_by(DESCRIP_E) %>%
+  skim(ANSCOUNT)
+
+count_by_occupational_group_for_top_10 %>%
+  ungroup() %>%
+  group_by(DESCRIP_E) %>%
+  skim(ANSCOUNT) %>%
+  yank("numeric") %>%
+  as_tibble() %>%
+  arrange(sd) %>%
+  View()
+
+count_by_occupational_group_for_top_10 %>%
+  ungroup() %>%
+  group_by(DESCRIP_E) %>%
+  summarize(max_responses = max(ANSCOUNT)) %>%
+  mutate(prop = max_responses / sum(max_responses, na.rm = TRUE)) %>%
+  mutate(prop_rounded = round(prop * 100, 2)) %>%
+  mutate(est_pop = round(population_2019 * prop)) %>%
+  select(-prop) %>%
+  arrange(-est_pop) %>%
+  write_csv("data/out/2019-estimated-occupational-group-size.csv")
+
+count_by_occupational_group_for_top_10 %>%
+  ungroup() %>%
+  group_by(DESCRIP_E) %>%
+  summarize(total = mean(ANSCOUNT, na.rm = TRUE))
+
+responses %>%
+  filter(SURVEYR == 2019) %>%
+  mutate(
+    response_count_prop = ANSCOUNT / response_count_2019,
+    residual = abs(ANSCOUNT - response_count_2019)
+  ) %>%
+  View()
+
+
+
