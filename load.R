@@ -44,10 +44,25 @@ responses <- tibble(path = fs::dir_ls("data/source/", regexp = "\\.csv$")) %>%
       SUBINDICATORID = col_double(),
       SUBINDICATORENG = col_character(),
       SUBINDICATORFRA = col_character()
-    )
+    ),
+    locale = readr::locale(encoding = "ISO-8859-1")
   ) %>%
   separate(BYCOND, into = c("BYCOND_CATEGORY", "BYCOND_VALUE"), sep = fixed(" = "), remove = FALSE, convert = TRUE)
+
+## TODO: replace 9999 with NA
 
 response_count_2019 <- 182306
 response_rate_2019 <- 0.623
 population_2019 <- response_count_2019 / response_rate_2019
+
+library(readxl)
+library(naniar)
+organizational_units <- read_excel(
+    "data/source/2019_PSES_Supporting_Documentation_Document_de_reference_du_SAFF_2019.xlsx",
+    sheet = "LEVEL2ID_LEVEL5ID"
+  ) %>%
+  replace_with_na_at(
+    c("LEVEL1ID", "LEVEL2ID", "LEVEL3ID", "LEVEL4ID", "LEVEL5ID"),
+    ~ .x == "000"
+  )
+

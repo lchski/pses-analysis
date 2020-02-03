@@ -91,3 +91,10 @@ responses %>%
 
 
 
+## CS planning to retire in next two years
+responses %>%
+  filter(SURVEYR == 2019) %>%
+  filter(QUESTION == "Q55") %>%
+  filter(BYCOND_CATEGORY == "Q94A" & DESCRIP_E == "CS") %>%
+  select(DEPT_E, ANSWER1, ANSCOUNT)
+
