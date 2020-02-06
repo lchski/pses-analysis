@@ -1,9 +1,10 @@
 library(tidyverse)
 library(lubridate)
+library(janitor)
 
 library(helpers)
 
-responses <- tibble(path = fs::dir_ls("data/source/", regexp = "\\.csv$")) %>%
+responses <- tibble(path = fs::dir_ls("data/source/open.canada.ca/2e4a1eb3-82ba-4a14-a5a3-f40bc11660bf/", regexp = "\\.csv$")) %>%
   pull(path) %>%
   map_dfr(
     read_csv,
@@ -55,14 +56,25 @@ response_count_2019 <- 182306
 response_rate_2019 <- 0.623
 population_2019 <- response_count_2019 / response_rate_2019
 
+pop_by_department <- read_csv("data/source/open.canada.ca/a68c6586-8ab0-4e76-b54e-cbdbd6183c2a/ssa-pop-eng.csv") %>%
+  clean_names()
+
 library(readxl)
 library(naniar)
 organizational_units <- read_excel(
-    "data/source/2019_PSES_Supporting_Documentation_Document_de_reference_du_SAFF_2019.xlsx",
+    "data/source/open.canada.ca/2e4a1eb3-82ba-4a14-a5a3-f40bc11660bf/2019_PSES_Supporting_Documentation_Document_de_reference_du_SAFF_2019.xlsx",
     sheet = "LEVEL2ID_LEVEL5ID"
   ) %>%
   replace_with_na_at(
     c("LEVEL1ID", "LEVEL2ID", "LEVEL3ID", "LEVEL4ID", "LEVEL5ID"),
     ~ .x == "000"
   )
+
+
+
+
+
+
+
+
 

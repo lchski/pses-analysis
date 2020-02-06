@@ -27,6 +27,9 @@ responses %>%
 
 
 
+
+
+
 ## ECs by department (note one DEPT_E is "Public Service") (by responses to Q11)
 responses %>%
   filter(SURVEYR == 2019) %>%
