@@ -70,7 +70,7 @@ organizational_units <- read_excel(
     ~ .x == "000"
   )
 
-
+rates_of_pay <- read_csv("data/source/github.com/meetingcostcalculator/meeting-cost-calculator-data/core.csv")
 
 
 

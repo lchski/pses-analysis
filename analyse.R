@@ -101,3 +101,72 @@ responses %>%
   filter(BYCOND_CATEGORY == "Q94A" & DESCRIP_E == "CS") %>%
   select(DEPT_E, ANSWER1, ANSCOUNT)
 
+
+
+
+count_by_occupational_group_for_top_10_tbs <- responses %>%
+  filter(SURVEYR == 2019) %>%
+  filter(QUESTION %in% highest_answered_questions_2019$QUESTION) %>%
+  filter(DEPT_E == "Treasury Board of Canada Secretariat") %>%
+  filter(BYCOND_CATEGORY == "OCCLEVEL") %>%
+  group_by(QUESTION) %>%
+  select(DESCRIP_E, ANSCOUNT) %>%
+  mutate(prop = ANSCOUNT / sum(ANSCOUNT, na.rm = TRUE))
+
+## get max number of responses by occupational group at TBS
+responses_by_occ_group_tbs <- count_by_occupational_group_for_top_10_tbs %>%
+  ungroup() %>%
+  group_by(DESCRIP_E) %>%
+  summarize(responses_max = max(ANSCOUNT, na.rm = TRUE)) %>%
+  filter(responses_max > 0) %>%
+  rename(occ_group = DESCRIP_E)
+
+responses_tbs <- responses_by_occ_group_tbs %>%
+  summarize(sum = sum(responses_max)) %>%
+  pull(sum)
+
+population_tbs <- pop_by_department %>%
+  filter(year == 2019) %>%
+  filter(departments_and_agencies == "Treasury Board of Canada Secretariat") %>%
+  pull(employees)
+
+response_rate_tbs <- responses_tbs / population_tbs
+
+estimated_costs_by_occ_group_tbs <- responses_by_occ_group_tbs %>%
+  mutate(employee_count_scaled = round(responses_max / response_rate_tbs)) %>%
+  mutate(occ_group = case_when(
+    str_detect(occ_group, "AS|CR|FI|IS") ~ str_remove(occ_group, "0"),
+    TRUE ~ occ_group
+  )) %>%
+  left_join(
+    rates_of_pay %>%
+      select(label:max),
+    by = c("occ_group" = "label")
+  ) %>%
+  rename(
+    occ_group_salary_min = min,
+    occ_group_salary_max = max
+  ) %>%
+  mutate(
+    est_cost_salary = employee_count_scaled * ((occ_group_salary_min + occ_group_salary_max) / 2),
+    est_cost_benefits = est_cost_salary * 0.4,
+    est_cost_overhead = employee_count_scaled * 15000,
+    est_cost_total = est_cost_salary + est_cost_benefits + est_cost_overhead
+  )
+
+estimated_costs_by_occ_group_tbs %>%
+  summarize_at(
+    vars(est_cost_salary:est_cost_total),
+    sum
+  ) %>%
+  pivot_longer(est_cost_salary:est_cost_total, names_to = "estimated_cost", values_to = "yearly_value") %>%
+  mutate(estimated_cost = str_remove(estimated_cost, "est_cost_")) %>%
+  mutate(
+    monthly_value = yearly_value / 12,
+    weekly_value = yearly_value / 52,
+    daily_value = yearly_value / 365
+  )
+  
+
+
+
